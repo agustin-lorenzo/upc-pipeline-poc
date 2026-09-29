@@ -55,3 +55,4 @@ python verify.py
 ## Pointing it at real endpoints
 
 Set `ENV_SERVICE_URL`, `FCC_SERVICE_URL`, and `ALS_SERVICE_URL`. Then adjust the endpoint client functions in `pipeline.py` (`get_environments`, `get_all_items`, `FCCClient._fetch`, `send_to_als`) to match the real paths, payloads, and auth headers. The rest of the pipeline stays the same.
+# upc-pipeline-poc
