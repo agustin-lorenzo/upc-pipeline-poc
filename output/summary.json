@@ -1,0 +1,43 @@
+{
+  "environments": [
+    "store-atl-001",
+    "store-nyc-014",
+    "dc-duluth",
+    "web-east"
+  ],
+  "total_items": 160,
+  "by_code_type": {
+    "local": 73,
+    "upc": 87
+  },
+  "by_outcome": {
+    "sent_via_fcc": 68,
+    "sent_direct": 87,
+    "fcc_not_found": 5
+  },
+  "by_environment": {
+    "store-atl-001": {
+      "sent_via_fcc": 14,
+      "sent_direct": 26
+    },
+    "store-nyc-014": {
+      "sent_direct": 23,
+      "sent_via_fcc": 16,
+      "fcc_not_found": 1
+    },
+    "dc-duluth": {
+      "sent_direct": 20,
+      "sent_via_fcc": 18,
+      "fcc_not_found": 2
+    },
+    "web-east": {
+      "sent_via_fcc": 20,
+      "sent_direct": 18,
+      "fcc_not_found": 2
+    }
+  },
+  "env_errors": {},
+  "fcc_calls": 73,
+  "dry_run": false,
+  "elapsed_s": 0.36
+}

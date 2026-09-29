@@ -1,0 +1,738 @@
+{
+  "seed": 42,
+  "upc_length": 10,
+  "environments": {
+    "store-atl-001": [
+      {
+        "item_id": "store-atl-001-item-0000",
+        "code": "094777"
+      },
+      {
+        "item_id": "store-atl-001-item-0001",
+        "code": "711671"
+      },
+      {
+        "item_id": "store-atl-001-item-0002",
+        "code": "941318"
+      },
+      {
+        "item_id": "store-atl-001-item-0003",
+        "code": "5182337498"
+      },
+      {
+        "item_id": "store-atl-001-item-0004",
+        "code": "867749"
+      },
+      {
+        "item_id": "store-atl-001-item-0005",
+        "code": "5053315869"
+      },
+      {
+        "item_id": "store-atl-001-item-0006",
+        "code": "4192832764"
+      },
+      {
+        "item_id": "store-atl-001-item-0007",
+        "code": "1669784801"
+      },
+      {
+        "item_id": "store-atl-001-item-0008",
+        "code": "0260647468"
+      },
+      {
+        "item_id": "store-atl-001-item-0009",
+        "code": "2513542784"
+      },
+      {
+        "item_id": "store-atl-001-item-0010",
+        "code": "812067"
+      },
+      {
+        "item_id": "store-atl-001-item-0011",
+        "code": "344713"
+      },
+      {
+        "item_id": "store-atl-001-item-0012",
+        "code": "6349578856"
+      },
+      {
+        "item_id": "store-atl-001-item-0013",
+        "code": "8013267736"
+      },
+      {
+        "item_id": "store-atl-001-item-0014",
+        "code": "242102"
+      },
+      {
+        "item_id": "store-atl-001-item-0015",
+        "code": "8557444313"
+      },
+      {
+        "item_id": "store-atl-001-item-0016",
+        "code": "5075273545"
+      },
+      {
+        "item_id": "store-atl-001-item-0017",
+        "code": "464887"
+      },
+      {
+        "item_id": "store-atl-001-item-0018",
+        "code": "659401"
+      },
+      {
+        "item_id": "store-atl-001-item-0019",
+        "code": "4948083136"
+      },
+      {
+        "item_id": "store-atl-001-item-0020",
+        "code": "3863794026"
+      },
+      {
+        "item_id": "store-atl-001-item-0021",
+        "code": "9808412411"
+      },
+      {
+        "item_id": "store-atl-001-item-0022",
+        "code": "3116566701"
+      },
+      {
+        "item_id": "store-atl-001-item-0023",
+        "code": "4714345581"
+      },
+      {
+        "item_id": "store-atl-001-item-0024",
+        "code": "0651333872"
+      },
+      {
+        "item_id": "store-atl-001-item-0025",
+        "code": "7277434873"
+      },
+      {
+        "item_id": "store-atl-001-item-0026",
+        "code": "1627204653"
+      },
+      {
+        "item_id": "store-atl-001-item-0027",
+        "code": "551256"
+      },
+      {
+        "item_id": "store-atl-001-item-0028",
+        "code": "7401640052"
+      },
+      {
+        "item_id": "store-atl-001-item-0029",
+        "code": "3200379176"
+      },
+      {
+        "item_id": "store-atl-001-item-0030",
+        "code": "154516"
+      },
+      {
+        "item_id": "store-atl-001-item-0031",
+        "code": "1043321819"
+      },
+      {
+        "item_id": "store-atl-001-item-0032",
+        "code": "5067165726"
+      },
+      {
+        "item_id": "store-atl-001-item-0033",
+        "code": "597703"
+      },
+      {
+        "item_id": "store-atl-001-item-0034",
+        "code": "4303911718"
+      },
+      {
+        "item_id": "store-atl-001-item-0035",
+        "code": "4714345581"
+      },
+      {
+        "item_id": "store-atl-001-item-0036",
+        "code": "932480"
+      },
+      {
+        "item_id": "store-atl-001-item-0037",
+        "code": "171274"
+      },
+      {
+        "item_id": "store-atl-001-item-0038",
+        "code": "9808412411"
+      },
+      {
+        "item_id": "store-atl-001-item-0039",
+        "code": "2729806990"
+      }
+    ],
+    "store-nyc-014": [
+      {
+        "item_id": "store-nyc-014-item-0000",
+        "code": "3534624751"
+      },
+      {
+        "item_id": "store-nyc-014-item-0001",
+        "code": "982146"
+      },
+      {
+        "item_id": "store-nyc-014-item-0002",
+        "code": "044997"
+      },
+      {
+        "item_id": "store-nyc-014-item-0003",
+        "code": "2236231665"
+      },
+      {
+        "item_id": "store-nyc-014-item-0004",
+        "code": "867533"
+      },
+      {
+        "item_id": "store-nyc-014-item-0005",
+        "code": "2191361939"
+      },
+      {
+        "item_id": "store-nyc-014-item-0006",
+        "code": "766270"
+      },
+      {
+        "item_id": "store-nyc-014-item-0007",
+        "code": "171870"
+      },
+      {
+        "item_id": "store-nyc-014-item-0008",
+        "code": "9367632016"
+      },
+      {
+        "item_id": "store-nyc-014-item-0009",
+        "code": "459615"
+      },
+      {
+        "item_id": "store-nyc-014-item-0010",
+        "code": "578091"
+      },
+      {
+        "item_id": "store-nyc-014-item-0011",
+        "code": "7401640052"
+      },
+      {
+        "item_id": "store-nyc-014-item-0012",
+        "code": "2871012269"
+      },
+      {
+        "item_id": "store-nyc-014-item-0013",
+        "code": "1669784801"
+      },
+      {
+        "item_id": "store-nyc-014-item-0014",
+        "code": "1669784801"
+      },
+      {
+        "item_id": "store-nyc-014-item-0015",
+        "code": "8059826204"
+      },
+      {
+        "item_id": "store-nyc-014-item-0016",
+        "code": "045562"
+      },
+      {
+        "item_id": "store-nyc-014-item-0017",
+        "code": "9367632016"
+      },
+      {
+        "item_id": "store-nyc-014-item-0018",
+        "code": "196937"
+      },
+      {
+        "item_id": "store-nyc-014-item-0019",
+        "code": "474074"
+      },
+      {
+        "item_id": "store-nyc-014-item-0020",
+        "code": "594647"
+      },
+      {
+        "item_id": "store-nyc-014-item-0021",
+        "code": "8013267736"
+      },
+      {
+        "item_id": "store-nyc-014-item-0022",
+        "code": "695944"
+      },
+      {
+        "item_id": "store-nyc-014-item-0023",
+        "code": "909743"
+      },
+      {
+        "item_id": "store-nyc-014-item-0024",
+        "code": "394210"
+      },
+      {
+        "item_id": "store-nyc-014-item-0025",
+        "code": "521456"
+      },
+      {
+        "item_id": "store-nyc-014-item-0026",
+        "code": "4303911718"
+      },
+      {
+        "item_id": "store-nyc-014-item-0027",
+        "code": "3561595148"
+      },
+      {
+        "item_id": "store-nyc-014-item-0028",
+        "code": "9808412411"
+      },
+      {
+        "item_id": "store-nyc-014-item-0029",
+        "code": "0799118384"
+      },
+      {
+        "item_id": "store-nyc-014-item-0030",
+        "code": "2729806990"
+      },
+      {
+        "item_id": "store-nyc-014-item-0031",
+        "code": "4278680112"
+      },
+      {
+        "item_id": "store-nyc-014-item-0032",
+        "code": "5868501429"
+      },
+      {
+        "item_id": "store-nyc-014-item-0033",
+        "code": "6705466889"
+      },
+      {
+        "item_id": "store-nyc-014-item-0034",
+        "code": "8346578713"
+      },
+      {
+        "item_id": "store-nyc-014-item-0035",
+        "code": "0097882081"
+      },
+      {
+        "item_id": "store-nyc-014-item-0036",
+        "code": "2148951343"
+      },
+      {
+        "item_id": "store-nyc-014-item-0037",
+        "code": "604817"
+      },
+      {
+        "item_id": "store-nyc-014-item-0038",
+        "code": "2513542784"
+      },
+      {
+        "item_id": "store-nyc-014-item-0039",
+        "code": "370985"
+      }
+    ],
+    "dc-duluth": [
+      {
+        "item_id": "dc-duluth-item-0000",
+        "code": "0097882081"
+      },
+      {
+        "item_id": "dc-duluth-item-0001",
+        "code": "6705466889"
+      },
+      {
+        "item_id": "dc-duluth-item-0002",
+        "code": "8059826204"
+      },
+      {
+        "item_id": "dc-duluth-item-0003",
+        "code": "047113"
+      },
+      {
+        "item_id": "dc-duluth-item-0004",
+        "code": "586926"
+      },
+      {
+        "item_id": "dc-duluth-item-0005",
+        "code": "1627204653"
+      },
+      {
+        "item_id": "dc-duluth-item-0006",
+        "code": "537735"
+      },
+      {
+        "item_id": "dc-duluth-item-0007",
+        "code": "4656482366"
+      },
+      {
+        "item_id": "dc-duluth-item-0008",
+        "code": "431713"
+      },
+      {
+        "item_id": "dc-duluth-item-0009",
+        "code": "8557444313"
+      },
+      {
+        "item_id": "dc-duluth-item-0010",
+        "code": "3164752553"
+      },
+      {
+        "item_id": "dc-duluth-item-0011",
+        "code": "3534624751"
+      },
+      {
+        "item_id": "dc-duluth-item-0012",
+        "code": "839335"
+      },
+      {
+        "item_id": "dc-duluth-item-0013",
+        "code": "228421"
+      },
+      {
+        "item_id": "dc-duluth-item-0014",
+        "code": "539502"
+      },
+      {
+        "item_id": "dc-duluth-item-0015",
+        "code": "4303911718"
+      },
+      {
+        "item_id": "dc-duluth-item-0016",
+        "code": "177589"
+      },
+      {
+        "item_id": "dc-duluth-item-0017",
+        "code": "908470"
+      },
+      {
+        "item_id": "dc-duluth-item-0018",
+        "code": "2729806990"
+      },
+      {
+        "item_id": "dc-duluth-item-0019",
+        "code": "7889579868"
+      },
+      {
+        "item_id": "dc-duluth-item-0020",
+        "code": "1627204653"
+      },
+      {
+        "item_id": "dc-duluth-item-0021",
+        "code": "159212"
+      },
+      {
+        "item_id": "dc-duluth-item-0022",
+        "code": "7837770143"
+      },
+      {
+        "item_id": "dc-duluth-item-0023",
+        "code": "984789"
+      },
+      {
+        "item_id": "dc-duluth-item-0024",
+        "code": "8281489325"
+      },
+      {
+        "item_id": "dc-duluth-item-0025",
+        "code": "2849877694"
+      },
+      {
+        "item_id": "dc-duluth-item-0026",
+        "code": "7234309805"
+      },
+      {
+        "item_id": "dc-duluth-item-0027",
+        "code": "2191361939"
+      },
+      {
+        "item_id": "dc-duluth-item-0028",
+        "code": "156545"
+      },
+      {
+        "item_id": "dc-duluth-item-0029",
+        "code": "116152"
+      },
+      {
+        "item_id": "dc-duluth-item-0030",
+        "code": "6349578856"
+      },
+      {
+        "item_id": "dc-duluth-item-0031",
+        "code": "165604"
+      },
+      {
+        "item_id": "dc-duluth-item-0032",
+        "code": "832731"
+      },
+      {
+        "item_id": "dc-duluth-item-0033",
+        "code": "493689"
+      },
+      {
+        "item_id": "dc-duluth-item-0034",
+        "code": "402445"
+      },
+      {
+        "item_id": "dc-duluth-item-0035",
+        "code": "0651333872"
+      },
+      {
+        "item_id": "dc-duluth-item-0036",
+        "code": "5075273545"
+      },
+      {
+        "item_id": "dc-duluth-item-0037",
+        "code": "018366"
+      },
+      {
+        "item_id": "dc-duluth-item-0038",
+        "code": "599102"
+      },
+      {
+        "item_id": "dc-duluth-item-0039",
+        "code": "147679"
+      }
+    ],
+    "web-east": [
+      {
+        "item_id": "web-east-item-0000",
+        "code": "094777"
+      },
+      {
+        "item_id": "web-east-item-0001",
+        "code": "614978"
+      },
+      {
+        "item_id": "web-east-item-0002",
+        "code": "900343"
+      },
+      {
+        "item_id": "web-east-item-0003",
+        "code": "107622"
+      },
+      {
+        "item_id": "web-east-item-0004",
+        "code": "2191361939"
+      },
+      {
+        "item_id": "web-east-item-0005",
+        "code": "060715"
+      },
+      {
+        "item_id": "web-east-item-0006",
+        "code": "4948083136"
+      },
+      {
+        "item_id": "web-east-item-0007",
+        "code": "605297"
+      },
+      {
+        "item_id": "web-east-item-0008",
+        "code": "136968"
+      },
+      {
+        "item_id": "web-east-item-0009",
+        "code": "5053315869"
+      },
+      {
+        "item_id": "web-east-item-0010",
+        "code": "218188"
+      },
+      {
+        "item_id": "web-east-item-0011",
+        "code": "231243"
+      },
+      {
+        "item_id": "web-east-item-0012",
+        "code": "3150983930"
+      },
+      {
+        "item_id": "web-east-item-0013",
+        "code": "779979"
+      },
+      {
+        "item_id": "web-east-item-0014",
+        "code": "527177"
+      },
+      {
+        "item_id": "web-east-item-0015",
+        "code": "8244935348"
+      },
+      {
+        "item_id": "web-east-item-0016",
+        "code": "1693406088"
+      },
+      {
+        "item_id": "web-east-item-0017",
+        "code": "5053315869"
+      },
+      {
+        "item_id": "web-east-item-0018",
+        "code": "411998"
+      },
+      {
+        "item_id": "web-east-item-0019",
+        "code": "7837770143"
+      },
+      {
+        "item_id": "web-east-item-0020",
+        "code": "4959310341"
+      },
+      {
+        "item_id": "web-east-item-0021",
+        "code": "4948083136"
+      },
+      {
+        "item_id": "web-east-item-0022",
+        "code": "4216073375"
+      },
+      {
+        "item_id": "web-east-item-0023",
+        "code": "071518"
+      },
+      {
+        "item_id": "web-east-item-0024",
+        "code": "778892"
+      },
+      {
+        "item_id": "web-east-item-0025",
+        "code": "590515"
+      },
+      {
+        "item_id": "web-east-item-0026",
+        "code": "925192"
+      },
+      {
+        "item_id": "web-east-item-0027",
+        "code": "5053315869"
+      },
+      {
+        "item_id": "web-east-item-0028",
+        "code": "148652"
+      },
+      {
+        "item_id": "web-east-item-0029",
+        "code": "685054"
+      },
+      {
+        "item_id": "web-east-item-0030",
+        "code": "733221"
+      },
+      {
+        "item_id": "web-east-item-0031",
+        "code": "1669784801"
+      },
+      {
+        "item_id": "web-east-item-0032",
+        "code": "5067165726"
+      },
+      {
+        "item_id": "web-east-item-0033",
+        "code": "592962"
+      },
+      {
+        "item_id": "web-east-item-0034",
+        "code": "8240084271"
+      },
+      {
+        "item_id": "web-east-item-0035",
+        "code": "7382997376"
+      },
+      {
+        "item_id": "web-east-item-0036",
+        "code": "4959310341"
+      },
+      {
+        "item_id": "web-east-item-0037",
+        "code": "9091699854"
+      },
+      {
+        "item_id": "web-east-item-0038",
+        "code": "738347"
+      },
+      {
+        "item_id": "web-east-item-0039",
+        "code": "977468"
+      }
+    ]
+  },
+  "fcc_mappings": {
+    "store-atl-001": {
+      "094777": "5868501429",
+      "711671": "3164752553",
+      "941318": "3164752553",
+      "867749": "8240084271",
+      "812067": "1031051834",
+      "344713": "3734670656",
+      "242102": "5067165726",
+      "464887": "4714345581",
+      "659401": "8557444313",
+      "551256": "3734670656",
+      "154516": "2849877694",
+      "597703": "3164752553",
+      "932480": "1627204653",
+      "171274": "2871012269"
+    },
+    "store-nyc-014": {
+      "982146": "8346578713",
+      "044997": "8053100330",
+      "867533": "4019655698",
+      "766270": "9367632016",
+      "171870": "6349578856",
+      "459615": "3150983930",
+      "578091": "9190586518",
+      "045562": "4959310341",
+      "196937": "0651333872",
+      "474074": "8346578713",
+      "594647": "1031051834",
+      "909743": "2148951343",
+      "394210": "1693406088",
+      "521456": "4714345581",
+      "604817": "5314737996",
+      "370985": "4656482366"
+    },
+    "dc-duluth": {
+      "047113": "8281489325",
+      "586926": "2278248963",
+      "431713": "1693406088",
+      "839335": "5075273545",
+      "228421": "8557444313",
+      "539502": "5423511615",
+      "177589": "4966319314",
+      "159212": "4714345581",
+      "984789": "4216073375",
+      "156545": "8760366909",
+      "116152": "3734670656",
+      "165604": "5314737996",
+      "832731": "1693406088",
+      "493689": "5314737996",
+      "402445": "5314737996",
+      "018366": "8350305641",
+      "599102": "1031051834",
+      "147679": "8240084271"
+    },
+    "web-east": {
+      "094777": "9808412411",
+      "614978": "9232719374",
+      "900343": "4959310341",
+      "107622": "0799118384",
+      "060715": "1693406088",
+      "605297": "3287083172",
+      "218188": "0097882081",
+      "231243": "4019655698",
+      "779979": "3953767242",
+      "527177": "8240084271",
+      "411998": "5940781618",
+      "071518": "8053100330",
+      "778892": "4959310341",
+      "925192": "6995777387",
+      "148652": "2148951343",
+      "685054": "4966319314",
+      "733221": "7234309805",
+      "592962": "4966319314",
+      "738347": "9413435240",
+      "977468": "6247317810"
+    }
+  },
+  "expected": {
+    "total_items": 160,
+    "direct_upc": 87,
+    "local_code": 73,
+    "fcc_unresolvable": 5
+  }
+}
