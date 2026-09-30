@@ -81,6 +81,14 @@ python test_agent.py                          # keyless smoke test (scripted LLM
 
 Tools that write to ALS use ADK's `require_confirmation`, so the agent pauses and `adk web` shows an approve/reject prompt before anything is sent. Dry runs (the default) never prompt. Every tool returns a dict with `status` set to `success`, `not_found`, or `error`.
 
+### One-command start (Windows)
+
+```bash
+.\start.ps1          # or double-click / run start.cmd
+```
+
+Creates `.venv` on first run, starts the mock services, starts `adk web` on http://localhost:8000 and opens it (pick `upc_agent`). Ctrl+C stops everything. If an earlier run is still holding ports 8000–8003 it tells you which processes; add `-Kill` to stop them, or `-NoBrowser` to skip opening the browser. Logs are in `output/`.
+
 ### Chatting with it
 
 `adk web` is the chat interface. Type an environment name, a UPC, or a local code and the agent reports ALS inventory status. For example:
