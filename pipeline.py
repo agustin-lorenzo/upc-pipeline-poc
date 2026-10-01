@@ -98,6 +98,8 @@ async def request_json(client: httpx.AsyncClient, method: str, url: str, **kwarg
 # Endpoint clients
 # ---------------------------------------------------------------------------
 async def get_environments(client: httpx.AsyncClient) -> list[str]:
+    if config.REAL:
+        return list(config.REAL_ENVIRONMENTS)
     return await request_json(client, "GET", f"{config.ENV_SERVICE_URL}/environments")
 
 
@@ -128,12 +130,54 @@ class FCCClient:
         return await self._cache[key]
 
     async def _fetch(self, env: str, code: str) -> str:
+        if config.REAL:
+            return (await self.resolve_all(env, code))[0]
         self.calls += 1
         data = await request_json(
             self.client, "GET", f"{config.FCC_SERVICE_URL}/fcc/upc",
             params={"environment": env, "code": code},
         )
         return data["upc"]
+
+    async def resolve_all(self, env: str, code: str) -> list[str]:
+        """Every UPC FCC has for a code. Mock FCC gives one; a real product can have several."""
+        if not config.REAL:
+            return [await self.resolve(env, code)]
+        key = ("all", env, code)
+        if key not in self._cache:
+            self._cache[key] = asyncio.ensure_future(self._fetch_real(env, code))
+        return await self._cache[key]
+
+    async def _fetch_real(self, env: str, code: str) -> list[str]:
+        self.calls += 1
+        base = config.FCC_REAL_URL_TEMPLATE.format(environment=env)
+        product = await request_json(self.client, "GET", f"{base}/api/catalog/v2/products/{code}")
+        upcs = extract_upcs(product)
+        if not upcs:
+            raise PermanentError(404, f"FCC product {code} in '{env}' has no {config.UPC_LENGTH}-digit UPCs")
+        return upcs
+
+
+def extract_upcs(node, _under_upc: bool = False) -> list[str]:
+    """Collects UPC_LENGTH-digit values stored under any key containing 'upc'.
+
+    The real FCC response format for UPCs is only partly known: the one example seen
+    had them in "unavailableUpcNumbers". Matching any *upc* key is a guess that should
+    be replaced with the real field(s) once known. Counters like "colorwayUpcCount"
+    are ignored by the length check.
+    """
+    found: list[str] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            found += [u for u in extract_upcs(value, _under_upc or "upc" in key.lower()) if u not in found]
+    elif isinstance(node, list):
+        for value in node:
+            found += [u for u in extract_upcs(value, _under_upc) if u not in found]
+    elif _under_upc and isinstance(node, (int, str)) and not isinstance(node, bool):
+        s = str(node).strip()
+        if s.isdigit() and len(s) == config.UPC_LENGTH:
+            found.append(s)
+    return found
 
 
 async def send_to_als(client: httpx.AsyncClient, r: ItemResult) -> dict:
@@ -146,7 +190,28 @@ async def send_to_als(client: httpx.AsyncClient, r: ItemResult) -> dict:
 
 
 async def get_als_status(client: httpx.AsyncClient, upc: str, env: str | None = None) -> dict:
-    """Inventory status for a UPC, in one environment or (env=None) across all of them."""
+    """Inventory status for a UPC, in one environment or (env=None) across all of them.
+
+    Real mode: availability isn't per environment; it's scoped by the ALS_REAL_PARAMS
+    (division, channel, fulfillment method, pickup location), and env is just echoed back.
+    """
+    if config.REAL:
+        p = config.ALS_REAL_PARAMS
+        data = await request_json(
+            client, "GET", f"{config.ALS_REAL_URL}/v2/availability/divn/{p['divn']}/upc/{upc}",
+            params={k: p[k] for k in ("availabilityType", "ffm", "country", "channel", "pickupLocation")},
+        )
+        entries = [n for item in data.get("items", []) for n in item.get("networkAvailability", [])]
+        if not entries:
+            return {"upc": upc, "environment": env, "available": False, "quantity": 0,
+                    "status": "unknown", "reason": "ALS returned no availability entries"}
+        available = any(e.get("available") for e in entries)
+        first = entries[0]
+        return {"upc": upc, "environment": env, "available": available,
+                "quantity": max(e.get("maxQuantity", 0) for e in entries),
+                "status": "in_stock" if available else "unavailable",
+                "inventory_status_code": first.get("inventoryStatusCode"),
+                "reason_code": first.get("reasonCode"), "reason": first.get("reasonDescription")}
     params = {"upc": upc}
     if env:
         params["environment"] = env

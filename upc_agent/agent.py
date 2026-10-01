@@ -13,6 +13,19 @@ from . import tools
 
 MODEL = os.getenv("UPC_AGENT_MODEL", "gemini-3.5-flash")
 
+# Extra guidance when running against the real FCC/ALS endpoints (UPC_BACKEND=real).
+REAL_NOTE = f"""
+IMPORTANT: you are connected to the REAL FCC and ALS endpoints, not mock data.
+- Only code lookups work. For anything else (environment-wide status, running or sending the
+  pipeline, listing items) tools return an error; say plainly that it isn't supported yet.
+- A "local code" here is an FCC product ID (like 28399242). One product can have several UPCs,
+  so check_code_status returns one ALS status per UPC; report each, and say whether any is available.
+- ALS availability is not per environment (it uses a fixed division, channel and pickup location),
+  and the status is "in_stock" or "unavailable" with a reason; report the reason ALS gave.
+- The only environment right now is {tools.config.REAL_ENVIRONMENTS}; use it by default.
+- Never send anything to ALS.
+""" if tools.config.REAL else ""
+
 INSTRUCTION = f"""
 You operate a product-code pipeline. Items come from live environments. Each item has
 a code that is either:
@@ -47,7 +60,7 @@ How to work:
   call get_run_results with that outcome and explain which items failed and why.
 - Never invent UPCs, item IDs or counts. Only report what the tools returned.
 - If a tool returns status "error", say what failed. Don't retry more than once.
-"""
+""" + REAL_NOTE
 
 root_agent = Agent(
     name="upc_pipeline_agent",

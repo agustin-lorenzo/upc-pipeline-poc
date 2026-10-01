@@ -18,14 +18,16 @@
 #>
 param(
     [switch]$Kill,
-    [switch]$NoBrowser
+    [switch]$NoBrowser,
+    [switch]$Real       # use the real FCC/ALS endpoints (UPC_BACKEND=real); no mock services
 )
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 $venvPython = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
 $adk = Join-Path $PSScriptRoot ".venv\Scripts\adk.exe"
-$ports = 8000, 8001, 8002, 8003
+$ports = if ($Real) { @(8000) } else { 8000, 8001, 8002, 8003 }
+$env:UPC_BACKEND = if ($Real) { "real" } else { "mock" }   # inherited by adk web
 New-Item -ItemType Directory -Force output | Out-Null
 
 # --- 1. Environment ----------------------------------------------------------
@@ -61,18 +63,23 @@ $procs = @()
 function Stop-Tree($p) { if ($p -and -not $p.HasExited) { cmd /c "taskkill /T /F /PID $($p.Id) >nul 2>&1" } }
 
 try {
-    # run_all.py regenerates the dummy data, then starts the three mock services.
-    $services = Start-Process $venvPython -ArgumentList "run_all.py", "--services-only" -NoNewWindow -PassThru `
-        -RedirectStandardOutput output\services.log -RedirectStandardError output\services.err.log
-    $procs += $services
+    $services = $null
+    if ($Real) {
+        Write-Host "Real mode: using the real FCC and ALS endpoints (read-only lookups only)."
+    } else {
+        # run_all.py regenerates the dummy data, then starts the three mock services.
+        $services = Start-Process $venvPython -ArgumentList "run_all.py", "--services-only" -NoNewWindow -PassThru `
+            -RedirectStandardOutput output\services.log -RedirectStandardError output\services.err.log
+        $procs += $services
 
-    Write-Host "Starting mock services..."
-    $deadline = (Get-Date).AddSeconds(30)
-    foreach ($port in 8001, 8002, 8003) {
-        while ($true) {
-            try { if ((Invoke-WebRequest "http://127.0.0.1:$port/health" -UseBasicParsing -TimeoutSec 1).StatusCode -eq 200) { break } } catch {}
-            if ($services.HasExited -or (Get-Date) -gt $deadline) { throw "Mock service on :$port didn't start. See output\services.log" }
-            Start-Sleep -Milliseconds 300
+        Write-Host "Starting mock services..."
+        $deadline = (Get-Date).AddSeconds(30)
+        foreach ($port in 8001, 8002, 8003) {
+            while ($true) {
+                try { if ((Invoke-WebRequest "http://127.0.0.1:$port/health" -UseBasicParsing -TimeoutSec 1).StatusCode -eq 200) { break } } catch {}
+                if ($services.HasExited -or (Get-Date) -gt $deadline) { throw "Mock service on :$port didn't start. See output\services.log" }
+                Start-Sleep -Milliseconds 300
+            }
         }
     }
 
@@ -90,7 +97,7 @@ try {
     Write-Host "`nReady: http://localhost:8000  (pick 'upc_agent'). Press Ctrl+C to stop everything."
     if (-not $NoBrowser) { Start-Process "http://localhost:8000" }
 
-    while (-not $web.HasExited -and -not $services.HasExited) { Start-Sleep 1 }
+    while (-not $web.HasExited -and -not ($services -and $services.HasExited)) { Start-Sleep 1 }
     Write-Warning "A process exited on its own; shutting down. See the logs in output\."
 }
 finally {

@@ -41,6 +41,15 @@ def _error(exc: Exception) -> dict:
     return {"status": "error", "error_message": str(exc)}
 
 
+def _real_unsupported(what: str) -> dict | None:
+    """In real mode (UPC_BACKEND=real) only code lookups work; return an error for the rest."""
+    if config.REAL:
+        return {"status": "error", "error_message":
+                f"{what} isn't available against the real endpoints: no real endpoint is known for it yet. "
+                "Only check_code_status, resolve_upc, classify_code and list_environments work."}
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Read-only tools
 # ---------------------------------------------------------------------------
@@ -72,6 +81,8 @@ async def get_environment_items(environment: str, offset: int = 0, limit: int = 
         dict: {"status": "success", "environment", "items": [{"item_id", "code", "code_type"}],
                "counts": {"upc": n, "local": n}, "total": int, "next_offset": int or null}
     """
+    if (unsupported := _real_unsupported("Listing an environment's items")):
+        return unsupported
     limit = max(1, min(limit, MAX_ITEMS_PER_CALL))
     try:
         async with _client() as client:
@@ -127,8 +138,10 @@ async def resolve_upc(environment: str, code: str) -> dict:
     """
     try:
         async with _client() as client:
-            upc = await pipeline.FCCClient(client).resolve(environment, code.strip())
-        return {"status": "success", "environment": environment, "code": code.strip(), "upc": upc}
+            upcs = await pipeline.FCCClient(client).resolve_all(environment, code.strip())
+        # Real FCC products can have several UPCs; "upc" is the first, "upcs" is all of them.
+        return {"status": "success", "environment": environment, "code": code.strip(),
+                "upc": upcs[0], "upcs": upcs}
     except pipeline.PermanentError as exc:
         if exc.status == 404:
             return {"status": "not_found", "environment": environment, "code": code,
@@ -158,6 +171,8 @@ async def check_code_status(code: str, environment: str = "") -> dict:
     """
     code, environment = code.strip(), environment.strip()
     code_type = pipeline.classify(code)
+    if config.REAL:
+        return await _check_code_status_real(code, code_type, environment)
     try:
         async with _client() as client:
             if code_type == "local":
@@ -183,6 +198,37 @@ async def check_code_status(code: str, environment: str = "") -> dict:
     return {**als, "status": "success", "code": code, "code_type": code_type, "upc": upc}
 
 
+async def _check_code_status_real(code: str, code_type: str, environment: str) -> dict:
+    """Real-endpoint version of check_code_status.
+
+    A "local code" is an FCC product ID, which can map to several UPCs, so the result
+    lists one ALS status per UPC. ALS availability isn't per environment here.
+    """
+    if not environment and len(config.REAL_ENVIRONMENTS) == 1:
+        environment = config.REAL_ENVIRONMENTS[0]
+    if code_type == "local" and not environment:
+        return {"status": "error", "error_message":
+                f"'{code}' is a product ID, so I need the environment. Options: {config.REAL_ENVIRONMENTS}"}
+    if environment and environment not in config.REAL_ENVIRONMENTS:
+        return {"status": "not_found", "error_message":
+                f"Unknown environment '{environment}'. Options: {config.REAL_ENVIRONMENTS}"}
+    try:
+        async with _client() as client:
+            upcs = await pipeline.FCCClient(client).resolve_all(environment, code) if code_type == "local" else [code]
+            results = await asyncio.gather(*(pipeline.get_als_status(client, u, environment or None) for u in upcs))
+    except pipeline.PermanentError as exc:
+        if exc.status == 404:
+            return {"status": "not_found", "code": code, "environment": environment, "error_message": str(exc)}
+        return _error(exc)
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+    rows = [{**r, "inventory_status": r["status"]} for r in results]
+    for r in rows:
+        del r["status"]
+    return {"status": "success", "code": code, "code_type": code_type, "environment": environment,
+            "available": any(r["available"] for r in rows), "upcs": rows}
+
+
 async def check_environment_status(environment: str, max_listed: int = 15) -> dict:
     """Checks ALS inventory availability for every item in an environment. Read-only.
 
@@ -199,6 +245,8 @@ async def check_environment_status(environment: str, max_listed: int = 15) -> di
                "unavailable": [{"item_id", "code", "upc", "inventory_status"}], "unavailable_total": int}
               or "not_found" for an unknown environment.
     """
+    if (unsupported := _real_unsupported("Checking a whole environment")):
+        return unsupported
     max_listed = max(1, min(max_listed, MAX_RESULTS_PER_CALL))
     try:
         async with _client() as client:
@@ -278,6 +326,8 @@ async def send_upc_to_als(upc: str, environment: str, item_id: str, source_code:
     Returns:
         dict: {"status": "success", "als_id", "upc"}, or status "error" if ALS rejected it.
     """
+    if (unsupported := _real_unsupported("Sending to ALS")):
+        return unsupported
     r = pipeline.ItemResult(environment=environment, item_id=item_id, source_code=source_code,
                             code_type=pipeline.classify(source_code), upc=upc.strip())
     try:
@@ -302,6 +352,8 @@ async def process_item(environment: str, item_id: str, code: str, dry_run: bool 
         dict: {"status": "success" | "error", "result": {environment, item_id, source_code,
                code_type, upc, outcome, als_id, error}}
     """
+    if (unsupported := _real_unsupported("Processing an item")):
+        return unsupported
     try:
         async with _client() as client:
             r = await pipeline.process_item(
@@ -329,6 +381,8 @@ async def run_pipeline(environments: list[str] | None = None, dry_run: bool = Tr
         dict: {"status": "success", "summary": {total_items, by_code_type, by_outcome,
                by_environment, env_errors, fcc_calls, dry_run, elapsed_s}}
     """
+    if (unsupported := _real_unsupported("Running the pipeline")):
+        return unsupported
     try:
         summary = await pipeline.run(environments or None, dry_run)
         return {"status": "success", "summary": summary}

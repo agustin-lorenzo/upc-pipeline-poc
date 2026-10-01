@@ -89,6 +89,26 @@ Tools that write to ALS use ADK's `require_confirmation`, so the agent pauses an
 
 Creates `.venv` on first run, starts the mock services, starts `adk web` on http://localhost:8000 and opens it (pick `upc_agent`). Ctrl+C stops everything. If an earlier run is still holding ports 8000–8003 it tells you which processes; add `-Kill` to stop them, or `-NoBrowser` to skip opening the browser. Logs are in `output/`.
 
+### Real endpoints (`UPC_BACKEND=real`)
+
+```bash
+.\start.ps1 -Real                  # chat against the real FCC and ALS, no mock services
+python test_real_endpoints.py      # read-only check of both real endpoints (needs network access)
+```
+
+Real mode is **read-only and only supports code lookups** (`check_code_status`, `resolve_upc`, `classify_code`, `list_environments`). Everything else returns an error saying it isn't supported, and nothing is ever sent to ALS.
+
+| | Mock | Real |
+|---|---|---|
+| FCC | `GET /fcc/upc?environment=&code=` | `GET https://fcc-client.{environment}.tbe.zeus.fds.com/api/catalog/v2/products/{productId}` |
+| ALS | `GET /als/status?upc=&environment=` | `GET http://availability-lookup-service-c1-k8s.cloudrts.net/v2/availability/divn/12/upc/{upc}?availabilityType=network&ffm=STH&country=840&channel=MCOM&pickupLocation=858` |
+| UPC length | 10 | 12 |
+
+**Unconfirmed assumptions in real mode** (all tunable in `config.py` / env vars):
+- The "local code" is the FCC **product ID** (e.g. `28399242`), and the environment is the FCC hostname part (e.g. `mcore-012`, via `REAL_ENVIRONMENTS`).
+- A product's UPCs are found by `pipeline.extract_upcs`, which collects 12-digit values under any key containing "upc". The one example seen had it in `unavailableUpcNumbers`; the real field for active products is unknown.
+- ALS availability uses fixed `divn=12, ffm=STH, channel=MCOM, country=840, pickupLocation=858` (`ALS_*` env vars) and isn't per environment. Status is `in_stock` when ALS says `available`, otherwise `unavailable` with ALS's reason.
+
 ### Chatting with it
 
 `adk web` is the chat interface. Type an environment name, a UPC, or a local code and the agent reports ALS inventory status. For example:

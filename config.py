@@ -6,11 +6,34 @@ pipeline at real endpoints later is a config change, not a code change.
 from __future__ import annotations
 import os
 
+# --- Backend -----------------------------------------------------------------
+# "mock": the local FastAPI services below (default).
+# "real": the real FCC and ALS read endpoints (see the REAL_* settings). Only code
+#         lookups work in real mode; there's no known real endpoint for listing an
+#         environment's items or for writing to ALS.
+BACKEND = os.getenv("UPC_BACKEND", "mock").lower()
+REAL = BACKEND == "real"
+
 # --- Code format rules -------------------------------------------------------
 # A code with exactly UPC_LENGTH digits is treated as a UPC and goes straight
 # to ALS. Anything else is treated as an environment-specific code and must be
-# resolved through FCC first.
-UPC_LENGTH = int(os.getenv("UPC_LENGTH", "10"))
+# resolved through FCC first. Real UPCs are 12 digits; the mock data uses 10.
+UPC_LENGTH = int(os.getenv("UPC_LENGTH", "12" if REAL else "10"))
+
+# --- Real endpoints (UPC_BACKEND=real) -----------------------------------------
+# The environment name is part of the FCC hostname, e.g. "mcore-012".
+REAL_ENVIRONMENTS = [e.strip() for e in os.getenv("REAL_ENVIRONMENTS", "mcore-012").split(",") if e.strip()]
+FCC_REAL_URL_TEMPLATE = os.getenv("FCC_REAL_URL_TEMPLATE", "https://fcc-client.{environment}.tbe.zeus.fds.com")
+ALS_REAL_URL = os.getenv("ALS_REAL_URL", "http://availability-lookup-service-c1-k8s.cloudrts.net")
+# Defaults copied from the example ALS request; none of these are confirmed.
+ALS_REAL_PARAMS = {
+    "divn": os.getenv("ALS_DIVN", "12"),
+    "availabilityType": os.getenv("ALS_AVAILABILITY_TYPE", "network"),
+    "ffm": os.getenv("ALS_FFM", "STH"),
+    "country": os.getenv("ALS_COUNTRY", "840"),
+    "channel": os.getenv("ALS_CHANNEL", "MCOM"),
+    "pickupLocation": os.getenv("ALS_PICKUP_LOCATION", "858"),
+}
 
 # --- Service URLs --------------------------------------------------------------
 ENV_SERVICE_URL = os.getenv("ENV_SERVICE_URL", "http://127.0.0.1:8001")
