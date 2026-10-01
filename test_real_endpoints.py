@@ -37,6 +37,9 @@ async def main() -> None:
     check("check_code_status product ID", r["status"] == "success" and row.get("upc") == UPC
           and row.get("available") is False, f"{row.get('inventory_status')}: {row.get('reason')}")
 
+    check("check_code_status includes FCC product", r["product"]["id"] == int(PRODUCT_ID)
+          and r["product"]["active"] is False, str(r["product"]["name"]))
+
     r = await tools.check_code_status(UPC)
     check("check_code_status UPC", r["status"] == "success" and r["upcs"][0]["upc"] == UPC)
     check("check_code_status unknown environment", (await tools.check_code_status(PRODUCT_ID, "nope"))["status"] == "not_found")

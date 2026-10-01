@@ -212,9 +212,11 @@ async def _check_code_status_real(code: str, code_type: str, environment: str) -
     if environment and environment not in config.REAL_ENVIRONMENTS:
         return {"status": "not_found", "error_message":
                 f"Unknown environment '{environment}'. Options: {config.REAL_ENVIRONMENTS}"}
+    fcc = None
     try:
         async with _client() as client:
-            upcs = await pipeline.FCCClient(client).resolve_all(environment, code) if code_type == "local" else [code]
+            fcc = pipeline.FCCClient(client)
+            upcs = await fcc.resolve_all(environment, code) if code_type == "local" else [code]
             results = await asyncio.gather(*(pipeline.get_als_status(client, u, environment or None) for u in upcs))
     except pipeline.PermanentError as exc:
         if exc.status == 404:
@@ -226,6 +228,10 @@ async def _check_code_status_real(code: str, code_type: str, environment: str) -
     for r in rows:
         del r["status"]
     return {"status": "success", "code": code, "code_type": code_type, "environment": environment,
+            "product": fcc.products.get((environment, code)),   # FCC's view: name, active, live, available
+            "note": None if code_type == "local" else
+                    "Checked ALS directly. FCC can only be looked up by product ID, so there are no product "
+                    "details (name, active, live) for a bare UPC.",
             "available": any(r["available"] for r in rows), "upcs": rows}
 
 

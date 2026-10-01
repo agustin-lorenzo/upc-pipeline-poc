@@ -120,7 +120,8 @@ class FCCClient:
 
     def __init__(self, client: httpx.AsyncClient):
         self.client = client
-        self._cache: dict[tuple[str, str], asyncio.Future] = {}
+        self._cache: dict[tuple, asyncio.Future] = {}
+        self.products: dict[tuple[str, str], dict] = {}   # real mode: FCC product summary per (env, code)
         self.calls = 0
 
     async def resolve(self, env: str, code: str) -> str:
@@ -152,6 +153,8 @@ class FCCClient:
         self.calls += 1
         base = config.FCC_REAL_URL_TEMPLATE.format(environment=env)
         product = await request_json(self.client, "GET", f"{base}/api/catalog/v2/products/{code}")
+        p = product.get("product", {})
+        self.products[(env, code)] = {k: p.get(k) for k in ("id", "name", "typeName", "active", "live", "available")}
         upcs = extract_upcs(product)
         if not upcs:
             raise PermanentError(404, f"FCC product {code} in '{env}' has no {config.UPC_LENGTH}-digit UPCs")

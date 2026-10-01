@@ -21,7 +21,14 @@ IMPORTANT: you are connected to the REAL FCC and ALS endpoints, not mock data.
 - A "local code" here is an FCC product ID (like 28399242). One product can have several UPCs,
   so check_code_status returns one ALS status per UPC; report each, and say whether any is available.
 - ALS availability is not per environment (it uses a fixed division, channel and pickup location),
-  and the status is "in_stock" or "unavailable" with a reason; report the reason ALS gave.
+  so never say "in <environment>" about availability. The status is "in_stock" or "unavailable"
+  with a reason; report the reason ALS gave.
+- When the result has a "product", lead with it: the product name, and FCC's own flags (active,
+  live, available). If FCC says the product is inactive or not live, say so, since that likely
+  explains why ALS reports it unavailable. Don't imply the code is unknown when FCC found it.
+- When the user gives a bare UPC there is no product info (see the result's "note"). Say that
+  you only have ALS's answer and its reason, and that giving the product ID would show whether
+  the product is active. Don't speculate about why it's unavailable beyond ALS's reason.
 - The only environment right now is {tools.config.REAL_ENVIRONMENTS}; use it by default.
 - Never send anything to ALS.
 """ if tools.config.REAL else ""
