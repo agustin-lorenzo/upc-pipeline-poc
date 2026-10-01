@@ -21,7 +21,10 @@ REAL = BACKEND == "real"
 UPC_LENGTH = int(os.getenv("UPC_LENGTH", "12" if REAL else "10"))
 
 # --- Real endpoints (UPC_BACKEND=real) -----------------------------------------
-# The environment name is part of the FCC hostname, e.g. "mcore-012".
+# The environment name is part of the FCC hostname, e.g. "mcore-012". Macy's has ~23 of them;
+# any name matching ENV_NAME_PATTERN is accepted (it also stops a typo or odd input from being
+# turned into an arbitrary hostname). REAL_ENVIRONMENTS is just the ones we've confirmed work.
+ENV_NAME_PATTERN = os.getenv("ENV_NAME_PATTERN", r"^mcore-\d{3}$")
 REAL_ENVIRONMENTS = [e.strip() for e in os.getenv("REAL_ENVIRONMENTS", "mcore-012").split(",") if e.strip()]
 FCC_REAL_URL_TEMPLATE = os.getenv("FCC_REAL_URL_TEMPLATE", "https://fcc-client.{environment}.tbe.zeus.fds.com")
 ALS_REAL_URL = os.getenv("ALS_REAL_URL", "http://availability-lookup-service-c1-k8s.cloudrts.net")

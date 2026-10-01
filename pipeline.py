@@ -153,11 +153,14 @@ class FCCClient:
         self.calls += 1
         base = config.FCC_REAL_URL_TEMPLATE.format(environment=env)
         product = await request_json(self.client, "GET", f"{base}/api/catalog/v2/products/{code}")
-        p = product.get("product", {})
+        p = product.get("product") or {}
+        if not p:   # FCC answers 200 {"product": {}} for IDs it doesn't have
+            raise PermanentError(404, f"FCC has no product {code} in '{env}'")
         self.products[(env, code)] = {k: p.get(k) for k in ("id", "name", "typeName", "active", "live", "available")}
         upcs = extract_upcs(product)
         if not upcs:
-            raise PermanentError(404, f"FCC product {code} in '{env}' has no {config.UPC_LENGTH}-digit UPCs")
+            raise PermanentError(404, f"FCC product {code} ('{p.get('name')}') in '{env}' exists but has no "
+                                      f"{config.UPC_LENGTH}-digit UPCs in the fields we read")
         return upcs
 
 

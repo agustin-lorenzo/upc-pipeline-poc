@@ -96,7 +96,14 @@ Creates `.venv` on first run, starts the mock services, starts `adk web` on http
 python test_real_endpoints.py      # read-only check of both real endpoints (needs network access)
 ```
 
-Real mode is **read-only and only supports code lookups** (`check_code_status`, `resolve_upc`, `classify_code`, `list_environments`). Everything else returns an error saying it isn't supported, and nothing is ever sent to ALS.
+In real mode the agent is the **Environment Triage Agent**: read-only, with two tools, and nothing is ever sent to ALS. `check_availability` takes either of:
+
+- `product_id` + `environment` (e.g. `28399242`, `mcore-012`): asks FCC in that environment for the product's UPC(s), then asks ALS about each one. The result also carries FCC's product name and active/live flags.
+- `upc`: goes straight to ALS. No environment needed, and no product details (FCC can only be queried by product ID).
+
+`resolve_upc` returns just the UPC(s) for a product ID + environment. Environment-wide checks, running the pipeline and sending to ALS return a "not supported" error.
+
+Environments: Macy's has about 23. Any name matching `ENV_NAME_PATTERN` (default `^mcore-\d{3}$`) is accepted and put into the FCC hostname, so you don't need a list. The pattern also keeps odd input out of the URL. Product IDs must be digits and UPCs must be 12 digits. A well-formed environment that doesn't resolve returns an error saying so. FCC answers `200 {"product": {}}` for a product it doesn't have, which the code reports as "no product".
 
 | | Mock | Real |
 |---|---|---|
@@ -105,7 +112,7 @@ Real mode is **read-only and only supports code lookups** (`check_code_status`, 
 | UPC length | 10 | 12 |
 
 **Unconfirmed assumptions in real mode** (all tunable in `config.py` / env vars):
-- The "local code" is the FCC **product ID** (e.g. `28399242`), and the environment is the FCC hostname part (e.g. `mcore-012`, via `REAL_ENVIRONMENTS`).
+- The "local code" is the FCC **product ID** (e.g. `28399242`), and the environment is the FCC hostname part (e.g. `mcore-012`). Only `mcore-012` and `mcore-011` have been seen to respond; the other names are assumed to follow the same `mcore-NNN` pattern.
 - A product's UPCs are found by `pipeline.extract_upcs`, which collects 12-digit values under any key containing "upc". The one example seen had it in `unavailableUpcNumbers`; the real field for active products is unknown.
 - ALS availability uses fixed `divn=12, ffm=STH, channel=MCOM, country=840, pickupLocation=858` (`ALS_*` env vars) and isn't per environment. Status is `in_stock` when ALS says `available`, otherwise `unavailable` with ALS's reason.
 

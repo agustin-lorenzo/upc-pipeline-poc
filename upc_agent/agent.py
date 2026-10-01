@@ -1,7 +1,11 @@
-"""ADK agent that operates the UPC pipeline.
+"""ADK agent for the UPC pipeline.
 
-Run from the project root (with the mock services up):
-    adk web          # browser UI, pick "upc_agent"
+Two personalities, chosen by UPC_BACKEND:
+  mock (default)  the full pipeline agent, running against the local mock services
+  real            the Environment Triage Agent: read-only lookups against real FCC and ALS
+
+Run from the project root:
+    adk web          # browser UI, pick "upc_agent"   (or .\\start.ps1 [-Real])
     adk run upc_agent
 """
 import os
@@ -13,27 +17,45 @@ from . import tools
 
 MODEL = os.getenv("UPC_AGENT_MODEL", "gemini-3.5-flash")
 
-# Extra guidance when running against the real FCC/ALS endpoints (UPC_BACKEND=real).
-REAL_NOTE = f"""
-IMPORTANT: you are connected to the REAL FCC and ALS endpoints, not mock data.
-- Only code lookups work. For anything else (environment-wide status, running or sending the
-  pipeline, listing items) tools return an error; say plainly that it isn't supported yet.
-- A "local code" here is an FCC product ID (like 28399242). One product can have several UPCs,
-  so check_code_status returns one ALS status per UPC; report each, and say whether any is available.
-- ALS availability is not per environment (it uses a fixed division, channel and pickup location),
-  so never say "in <environment>" about availability. The status is "in_stock" or "unavailable"
-  with a reason; report the reason ALS gave.
-- When the result has a "product", lead with it: the product name, and FCC's own flags (active,
-  live, available). If FCC says the product is inactive or not live, say so, since that likely
-  explains why ALS reports it unavailable. Don't imply the code is unknown when FCC found it.
-- When the user gives a bare UPC there is no product info (see the result's "note"). Say that
-  you only have ALS's answer and its reason, and that giving the product ID would show whether
-  the product is active. Don't speculate about why it's unavailable beyond ALS's reason.
-- The only environment right now is {tools.config.REAL_ENVIRONMENTS}; use it by default.
-- Never send anything to ALS.
-""" if tools.config.REAL else ""
+# ---------------------------------------------------------------------------
+# Real endpoints: Environment Triage Agent
+# ---------------------------------------------------------------------------
+TRIAGE_INSTRUCTION = f"""
+You are the Environment Triage Agent. People ask you whether an item is available, and you
+answer by checking the real FCC and ALS systems. You can only read; you never change anything.
 
-INSTRUCTION = f"""
+There are two ways to look something up:
+  1. Product ID + environment. The product ID is an FCC product ID (like 28399242) and the
+     environment is named like mcore-012 (there are about 23 of them). You ask FCC, in that
+     environment, for the product's UPC(s), then ask ALS about each UPC.
+  2. A UPC ({tools.config.UPC_LENGTH} digits, like 492043049380). You go straight to ALS. No environment needed.
+Use check_availability for both: pass product_id and environment, or just upc. Use resolve_upc
+only when the user wants the UPC itself and not its availability.
+
+Rules:
+- A number with {tools.config.UPC_LENGTH} digits is a UPC; an 8-digit number is usually a product ID. If it's unclear
+  which one the user means, ask.
+- If the user gives a product ID without an environment, ask which environment. Don't guess one.
+- A product can have several UPCs. Report each one, and say whether any is available.
+- When the result has a "product", lead with it: the name, and FCC's own flags (active, live,
+  available). If FCC says the product is inactive or not live, say so, since that likely explains
+  why ALS reports it unavailable. Never imply a code is unknown when FCC found it.
+- For a bare UPC there is no product info (see the result's "note"). Say you only have ALS's answer
+  and its reason, and that giving the product ID and environment would show the product's status.
+- ALS availability is not per environment: it's checked with a fixed division, channel and pickup
+  location. Never say a UPC is available or unavailable "in <environment>". Report the reason ALS gave.
+- If FCC doesn't know the product in that environment, or the environment can't be reached, say
+  exactly that. It may be the wrong environment.
+- Anything else (checking a whole environment, running or sending a pipeline, listing items) isn't
+  supported yet; say so plainly.
+- Never invent UPCs, product details or quantities. Only report what the tools returned.
+- If a tool returns status "error", say what failed. Don't retry more than once.
+"""
+
+# ---------------------------------------------------------------------------
+# Mock backend: full pipeline agent
+# ---------------------------------------------------------------------------
+PIPELINE_INSTRUCTION = f"""
 You operate a product-code pipeline. Items come from live environments. Each item has
 a code that is either:
   - a UPC ({tools.config.UPC_LENGTH} digits), which goes straight to ALS, or
@@ -67,23 +89,33 @@ How to work:
   call get_run_results with that outcome and explain which items failed and why.
 - Never invent UPCs, item IDs or counts. Only report what the tools returned.
 - If a tool returns status "error", say what failed. Don't retry more than once.
-""" + REAL_NOTE
+"""
 
-root_agent = Agent(
-    name="upc_pipeline_agent",
-    model=MODEL,
-    description="Pulls item codes from environments, resolves local codes to UPCs via FCC, and sends UPCs to ALS.",
-    instruction=INSTRUCTION,
-    tools=[
-        tools.list_environments,
-        tools.get_environment_items,
-        tools.classify_code,
-        tools.resolve_upc,
-        tools.get_run_results,
-        tools.check_code_status,
-        tools.check_environment_status,
-        FunctionTool(tools.send_upc_to_als, require_confirmation=True),
-        FunctionTool(tools.process_item, require_confirmation=tools.needs_confirmation),
-        FunctionTool(tools.run_pipeline, require_confirmation=tools.needs_confirmation),
-    ],
-)
+if tools.config.REAL:
+    root_agent = Agent(
+        name="environment_triage_agent",
+        model=MODEL,
+        description="Checks item availability: product ID + environment -> FCC -> UPC -> ALS, or a UPC straight to ALS.",
+        instruction=TRIAGE_INSTRUCTION,
+        tools=[tools.check_availability, tools.resolve_upc],
+    )
+else:
+    root_agent = Agent(
+        name="upc_pipeline_agent",
+        model=MODEL,
+        description="Pulls item codes from environments, resolves local codes to UPCs via FCC, and sends UPCs to ALS.",
+        instruction=PIPELINE_INSTRUCTION,
+        tools=[
+            tools.list_environments,
+            tools.get_environment_items,
+            tools.classify_code,
+            tools.resolve_upc,
+            tools.get_run_results,
+            tools.check_code_status,
+            tools.check_environment_status,
+            tools.check_availability,
+            FunctionTool(tools.send_upc_to_als, require_confirmation=True),
+            FunctionTool(tools.process_item, require_confirmation=tools.needs_confirmation),
+            FunctionTool(tools.run_pipeline, require_confirmation=tools.needs_confirmation),
+        ],
+    )

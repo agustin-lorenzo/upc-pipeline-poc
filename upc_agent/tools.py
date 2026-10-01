@@ -17,6 +17,7 @@ Tools that write to ALS (need confirmation unless dry_run=True):
 import asyncio
 import json
 import os
+import re
 import sys
 from collections import Counter
 from dataclasses import asdict
@@ -136,6 +137,8 @@ async def resolve_upc(environment: str, code: str) -> dict:
         dict: {"status": "success", "environment", "code", "upc"}, or
               {"status": "not_found", ...} if FCC has no UPC for that code in that environment.
     """
+    if config.REAL and (bad := _validate_real(code.strip(), "local", environment.strip())):
+        return bad
     try:
         async with _client() as client:
             upcs = await pipeline.FCCClient(client).resolve_all(environment, code.strip())
@@ -198,25 +201,73 @@ async def check_code_status(code: str, environment: str = "") -> dict:
     return {**als, "status": "success", "code": code, "code_type": code_type, "upc": upc}
 
 
+def _validate_real(code: str, code_type: str, environment: str) -> dict | None:
+    """Input checks for real mode; the values end up in URLs, so keep them strict."""
+    if code_type == "upc":
+        if not (code.isdigit() and len(code) == config.UPC_LENGTH):
+            return {"status": "error", "error_message": f"'{code}' isn't a valid {config.UPC_LENGTH}-digit UPC."}
+    else:
+        if not code.isdigit():
+            return {"status": "error", "error_message": f"'{code}' isn't a valid product ID (digits only)."}
+        if not environment:
+            return {"status": "error", "error_message":
+                    f"Product ID '{code}' needs an environment (named like mcore-012) so FCC can be queried."}
+    if environment and not re.fullmatch(config.ENV_NAME_PATTERN, environment):
+        return {"status": "error", "error_message":
+                f"'{environment}' doesn't look like an environment name (expected something like mcore-012)."}
+    return None
+
+
+async def check_availability(upc: str = "", product_id: str = "", environment: str = "") -> dict:
+    """Checks ALS availability, starting from either a UPC or an FCC product ID. Read-only.
+
+    Two ways to call it:
+      - product_id + environment: asks FCC (in that environment) for the product's UPC(s),
+        then asks ALS about each UPC.
+      - upc: goes straight to ALS. No environment needed.
+
+    Args:
+        upc: A UPC (12 digits). Use this when the user already has the UPC.
+        product_id: An FCC product ID (e.g. 28399242). Needs `environment`.
+        environment: Environment name, like mcore-012. Needed with product_id; ignored for a UPC.
+
+    Returns:
+        dict: {"status": "success", "available": bool, "product": FCC's name/active/live/available
+               (product ID only), "upcs": [{"upc", "available", "quantity", "inventory_status",
+               "reason", ...}]}, or "not_found" if FCC doesn't know the product, or "error"
+               (bad input, unreachable environment, ...).
+    """
+    upc, product_id, environment = upc.strip(), product_id.strip(), environment.strip()
+    if bool(upc) == bool(product_id):
+        return {"status": "error", "error_message": "Give exactly one of upc or product_id."}
+    code, code_type = (upc, "upc") if upc else (product_id, "local")
+    if config.REAL:
+        return await _check_code_status_real(code, code_type, environment)
+    return await check_code_status(code, environment)   # mock backend
+
+
 async def _check_code_status_real(code: str, code_type: str, environment: str) -> dict:
     """Real-endpoint version of check_code_status.
 
     A "local code" is an FCC product ID, which can map to several UPCs, so the result
     lists one ALS status per UPC. ALS availability isn't per environment here.
     """
-    if not environment and len(config.REAL_ENVIRONMENTS) == 1:
-        environment = config.REAL_ENVIRONMENTS[0]
-    if code_type == "local" and not environment:
-        return {"status": "error", "error_message":
-                f"'{code}' is a product ID, so I need the environment. Options: {config.REAL_ENVIRONMENTS}"}
-    if environment and environment not in config.REAL_ENVIRONMENTS:
-        return {"status": "not_found", "error_message":
-                f"Unknown environment '{environment}'. Options: {config.REAL_ENVIRONMENTS}"}
+    if (bad := _validate_real(code, code_type, environment)):
+        return bad
     fcc = None
     try:
         async with _client() as client:
             fcc = pipeline.FCCClient(client)
-            upcs = await fcc.resolve_all(environment, code) if code_type == "local" else [code]
+            if code_type == "local":
+                try:
+                    upcs = await fcc.resolve_all(environment, code)
+                except pipeline.PermanentError:
+                    raise
+                except Exception as exc:  # noqa: BLE001
+                    return {"status": "error", "error_message":
+                            f"Couldn't reach FCC for environment '{environment}' (does it exist?): {exc}"}
+            else:
+                upcs = [code]
             results = await asyncio.gather(*(pipeline.get_als_status(client, u, environment or None) for u in upcs))
     except pipeline.PermanentError as exc:
         if exc.status == 404:
