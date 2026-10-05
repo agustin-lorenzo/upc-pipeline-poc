@@ -116,6 +116,26 @@ Environments: Macy's has about 23. Any name matching `ENV_NAME_PATTERN` (default
 - A product's UPCs are found by `pipeline.extract_upcs`, which collects 12-digit values under any key containing "upc". The one example seen had it in `unavailableUpcNumbers`; the real field for active products is unknown.
 - ALS availability uses fixed `divn=12, ffm=STH, channel=MCOM, country=840, pickupLocation=858` (`ALS_*` env vars) and isn't per environment. Status is `in_stock` when ALS says `available`, otherwise `unavailable` with ALS's reason.
 
+### Microsoft Teams bot (`teams_bot/`)
+
+A Teams front end for the Environment Triage Agent, built on the Microsoft 365 Agents SDK. Teams posts each message to `POST /api/messages`; the bot runs the agent (one session per Teams conversation) and replies. Read-only, real endpoints only. It also strips @mentions, sends a welcome message when added, and understands `reset`.
+
+```bash
+pip install -r requirements-teams.txt
+python test_teams_bot.py          # keyless and offline: real endpoint + scripted LLM + fake Teams
+```
+
+Running it locally, without Teams or Azure:
+
+```bash
+$env:TEAMS_BOT_ALLOW_ANONYMOUS = "true"     # PowerShell; local testing only, skips auth, listens on localhost
+python -m teams_bot.app                      # http://localhost:3978/api/messages, GET /health
+```
+
+Then point a local Teams-style test client (Microsoft 365 Agents Playground) at that URL. It uses the Gemini key from `upc_agent/.env`.
+
+For real Teams the bot needs credentials from an Azure Bot / Entra app registration (`teams_bot/.env.example`) and a public HTTPS URL that Teams can reach. With credentials set, every request must carry a valid Microsoft-issued token (checked in `test_teams_bot.py`); without them, and without the explicit anonymous opt-in, the app refuses to start. Sessions are in memory, so a restart forgets conversations and you can't run several instances yet.
+
 ### Chatting with it
 
 `adk web` is the chat interface. Type an environment name, a UPC, or a local code and the agent reports ALS inventory status. For example:

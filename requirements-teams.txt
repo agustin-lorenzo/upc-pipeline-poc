@@ -1,0 +1,5 @@
+-r requirements-agent.txt
+microsoft-agents-hosting-aiohttp>=1.8
+microsoft-agents-hosting-core>=1.8
+microsoft-agents-activity>=1.8
+microsoft-agents-authentication-msal>=1.8

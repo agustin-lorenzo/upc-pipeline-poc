@@ -45,11 +45,20 @@ selected by `UPC_BACKEND=real` (`start.ps1 -Real`). UPC_LENGTH defaults to 12 in
 In real mode `agent.py` builds the read-only "Environment Triage Agent" (tools: `check_availability`
 with `upc` OR `product_id`+`environment`, and `resolve_upc`); everything else returns "not supported".
 ~23 environments exist; any name matching `ENV_NAME_PATTERN` (`^mcore-\d{3}$`) is accepted, no list.
-FCC returns `200 {"product": {}}` for unknown products. Goal: this becomes an agent reachable via
-Microsoft Teams (not started). Guesses, not facts: the
+FCC returns `200 {"product": {}}` for unknown products. Guesses, not facts: the
 local code is the FCC product ID, UPCs are found by `pipeline.extract_upcs` (any key with "upc"),
 and ALS params (divn 12, ffm STH, MCOM, 840, pickup 858) are copied from one example. `python
 test_real_endpoints.py` checks the live endpoints (no auth was needed from the user's machine).
+
+## Teams bot (`teams_bot/`)
+Goal: the triage agent reachable from Macy's internal Microsoft Teams. `chat.py` (`AgentChat`: ADK
+Runner + one in-memory session per conversation, SDK-independent) and `app.py` (aiohttp +
+Microsoft 365 Agents SDK: `POST /api/messages`, JWT auth, welcome, `reset`). Always real mode,
+read-only (no confirmation flow in Teams). `python test_teams_bot.py` is keyless/offline and drives
+the real endpoint with a scripted LLM and a fake Teams channel service. Anonymous mode needs
+`TEAMS_BOT_ALLOW_ANONYMOUS=true` (local only). Not yet done: running in real Teams or the Agents
+Playground, hosting, and Azure Bot/Entra registration. The user doesn't yet know what Azure access,
+hosting, or approved LLMs exist at Macy's; FCC/ALS hosts only resolved from the user's network.
 
 ## Commands
 ```bash
