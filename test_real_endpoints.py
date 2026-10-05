@@ -12,7 +12,8 @@ os.environ["UPC_BACKEND"] = "real"   # must be set before config is imported
 import config  # noqa: E402
 from upc_agent import tools  # noqa: E402
 
-# Example from the real systems: product 28399242 (inactive) has UPC 492043049380.
+# Example from the real systems: product 28399242 has UPC 492043049380. Live inventory
+# changes (it was unavailable, then in stock), so tests check structure, not availability.
 PRODUCT_ID, UPC, ENV = "28399242", "492043049380", "mcore-012"
 failures: list[str] = []
 
@@ -35,10 +36,10 @@ async def main() -> None:
     r = await tools.check_code_status(PRODUCT_ID, ENV)
     row = r["upcs"][0] if r["status"] == "success" else {}
     check("check_code_status product ID", r["status"] == "success" and row.get("upc") == UPC
-          and row.get("available") is False, f"{row.get('inventory_status')}: {row.get('reason')}")
+          and isinstance(row.get("available"), bool), f"{row.get('inventory_status')}: qty {row.get('quantity')}")
 
     check("check_code_status includes FCC product", r["product"]["id"] == int(PRODUCT_ID)
-          and r["product"]["active"] is False, str(r["product"]["name"]))
+          and isinstance(r["product"]["active"], bool), str(r["product"]["name"]))
 
     r = await tools.check_code_status(UPC)
     check("check_code_status UPC", r["status"] == "success" and r["upcs"][0]["upc"] == UPC)
@@ -47,10 +48,10 @@ async def main() -> None:
     r = await tools.check_availability(product_id=PRODUCT_ID, environment=ENV)
     row = r["upcs"][0] if r["status"] == "success" else {}
     check("product_id + environment -> FCC -> ALS", r["status"] == "success" and row.get("upc") == UPC
-          and r["product"]["name"] and r["available"] is False, f"{r['product']['name']} / {row.get('reason')}")
+          and r["product"]["name"] and isinstance(r["available"], bool),
+          f"{r['product']['name']} / {row.get('inventory_status')}")
     r = await tools.check_availability(upc=UPC)
-    check("UPC straight to ALS", r["status"] == "success" and r["product"] is None and r["upcs"][0]["upc"] == UPC
-          and "note" in r and r["note"])
+    check("UPC straight to ALS", r["status"] == "success" and r["product"] is None and r["upcs"][0]["upc"] == UPC)
 
     print("  -- check_availability: bad input --")
     for name, kwargs in {

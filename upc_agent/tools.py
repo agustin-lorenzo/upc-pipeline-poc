@@ -280,9 +280,6 @@ async def _check_code_status_real(code: str, code_type: str, environment: str) -
         del r["status"]
     return {"status": "success", "code": code, "code_type": code_type, "environment": environment,
             "product": fcc.products.get((environment, code)),   # FCC's view: name, active, live, available
-            "note": None if code_type == "local" else
-                    "Checked ALS directly. FCC can only be looked up by product ID, so there are no product "
-                    "details (name, active, live) for a bare UPC.",
             "available": any(r["available"] for r in rows), "upcs": rows}
 
 
