@@ -108,6 +108,9 @@ async def main() -> None:
         r = await say(client, "still alive", conv="c5")
         check("bot keeps working after a failure", len(r) == 1 and r[0].startswith("echo:still alive"), str(r))
 
+        check("single newlines become paragraph breaks", bot.for_teams("a\nb\n\nc\n- d\n- e") == "a\n\nb\n\nc\n\n- d\n\n- e",
+              repr(bot.for_teams("a\nb\n\nc")))
+
         print("\n=== Teams bot: conversation updates ===")
         r = await say(client, type="conversationUpdate", conv="c6", membersAdded=[{"id": "bot1", "name": "Bot"}])
         check("welcome when the bot is added", r == [bot.WELCOME], str(r)[:60])

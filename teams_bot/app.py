@@ -16,7 +16,7 @@ This bot is read-only, so it always runs the agent in real mode (UPC_BACKEND=rea
 pipeline agent needs approve/reject prompts for ALS writes, which Teams doesn't give us here.
 """
 import logging
-import os
+import re
 import sys
 from os import environ
 from pathlib import Path
@@ -49,6 +49,11 @@ WELCOME = (
     "Type `reset` to start over."
 )
 RESET_WORDS = {"reset", "/reset", "start over"}
+
+
+def for_teams(text: str) -> str:
+    """Teams renders markdown, where a single newline is just a space; make each one a paragraph break."""
+    return re.sub(r"(?<!\n)\n(?!\n)", "\n\n", text)
 
 
 def build_connection_manager(allow_anonymous: bool) -> tuple[MsalConnectionManager, dict]:
@@ -87,7 +92,7 @@ def create_app(chat: AgentChat, connection_manager: MsalConnectionManager, sdk_c
             await chat.reset(conversation_id)
             await context.send_activity("Okay, starting fresh.")
             return
-        await context.send_activity(await chat.reply(conversation_id, text))
+        await context.send_activity(for_teams(await chat.reply(conversation_id, text)))
 
     @agent_app.error
     async def on_error(context: TurnContext, error: Exception):

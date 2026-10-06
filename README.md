@@ -125,14 +125,14 @@ pip install -r requirements-teams.txt
 python test_teams_bot.py          # keyless and offline: real endpoint + scripted LLM + fake Teams
 ```
 
-Running it locally, without Teams or Azure:
+Trying it locally, without Teams or Azure, in the Microsoft 365 Agents Playground (a Teams-like chat window that runs on your machine; it is not Teams):
 
 ```bash
-$env:TEAMS_BOT_ALLOW_ANONYMOUS = "true"     # PowerShell; local testing only, skips auth, listens on localhost
-python -m teams_bot.app                      # http://localhost:3978/api/messages, GET /health
+winget install Microsoft.M365AgentsPlayground     # one time
+.\start_teams_local.ps1                            # starts the bot + Playground, opens http://localhost:56150
 ```
 
-Then point a local Teams-style test client (Microsoft 365 Agents Playground) at that URL. It uses the Gemini key from `upc_agent/.env`.
+The script runs the bot in anonymous mode (`TEAMS_BOT_ALLOW_ANONYMOUS=true`: no auth, localhost only) and the Playground with telemetry off. Ctrl+C stops both. To run just the bot: set `TEAMS_BOT_ALLOW_ANONYMOUS=true`, then `python -m teams_bot.app` (`http://localhost:3978/api/messages`, `GET /health`). It uses the Gemini key from `upc_agent/.env`.
 
 For real Teams the bot needs credentials from an Azure Bot / Entra app registration (`teams_bot/.env.example`) and a public HTTPS URL that Teams can reach. With credentials set, every request must carry a valid Microsoft-issued token (checked in `test_teams_bot.py`); without them, and without the explicit anonymous opt-in, the app refuses to start. Sessions are in memory, so a restart forgets conversations and you can't run several instances yet.
 
