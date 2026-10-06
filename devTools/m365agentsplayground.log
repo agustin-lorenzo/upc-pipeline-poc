@@ -1,8 +1,0 @@
-log Listening on 56150
-log Microsoft 365 Agents Playground is being launched for you to debug the app: http://localhost:56150
-debug started web socket client
-debug started web socket client
-log Waiting for connection of endpoint: http://localhost:3978/api/messages
-log waiting for 1 resources: http://localhost:3978/api/messages
-log wait-on(56244) complete
-log Events recording disabled.
